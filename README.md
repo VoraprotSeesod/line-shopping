@@ -113,7 +113,7 @@ Install line-shopping using one of the following methods:
 3. Install the project dependencies:
 
 
-**Using `pip`** &nbsp; [<img align="center" src="" />]()
+**Using `pip`**
 
 ```sh
 ❯ echo 'INSERT-INSTALL-COMMAND-HERE'
