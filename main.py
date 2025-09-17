@@ -2,7 +2,7 @@ from playwright.sync_api import sync_playwright, TimeoutError
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import os
-
+from openpyxl import Workbook
 
 def initial_shop_name(source_file: str) -> list[str]:
     """อ่านชื่อร้านจากไฟล์ (ละเว้นบรรทัดว่าง)"""
@@ -26,6 +26,27 @@ def save_list_to_file(base_dir: str, shop_name: str, filename: str, data: list[s
     with open(file_path, "w", encoding="utf-8") as f:
         f.write("\n".join(data))
 
+def save_list_to_excel(base_dir: str, shop_name: str, filename: str, data: list[str]):
+    """บันทึก list ของ string ลงไฟล์ Excel (.xlsx) ถ้า list ว่างจะไม่เขียนไฟล์"""
+    if not data:
+        return
+    os.makedirs(base_dir, exist_ok=True)
+    shop_dir = os.path.join(base_dir, f"{shop_name}_fda")
+    os.makedirs(shop_dir, exist_ok=True)
+    file_path = os.path.join(shop_dir, f"{shop_name}_{filename}.xlsx")
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Log"
+
+    # ใส่ header
+    ws.append(["Product URL / Log"])
+
+    # ใส่ข้อมูลแต่ละบรรทัด
+    for item in data:
+        ws.append([item])
+
+    wb.save(file_path)
 
 def scroll_to_load_all(page, scroll_pause=1500, max_scroll=50):
     """เลื่อนหน้าจอเพื่อโหลดสินค้าทั้งหมด (lazy load)"""
@@ -96,6 +117,7 @@ def process_shop(shop_name: str, shop_url: str, base_url: str):
         # บันทึกผลลัพธ์
         save_list_to_file("fda_output", shop_name, "fda_list", fda_list)
         save_list_to_file("fda_output", shop_name, "fda_log", fda_log)
+        save_list_to_excel("fda_output", shop_name, "fda_log", fda_log)
 
         print(f"🎉 {shop_name} เสร็จสิ้น! (FDA {len(fda_list)} รายการ, Log {len(fda_log)} รายการ)")
         browser.close()
